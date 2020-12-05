@@ -18,7 +18,24 @@ def TCA_0(Vsupply, Vin, Gain, Rset, Ioffset, Ra, R2, beta=100):
     return R1, Rb
 
 
-def TCA_1(Vsupply, Vin, Gain, Rset, Ioffset, Ra, R2, beta=100):
+def TCA_1(Vsupply, Vsignal, transconductance, Rset, Iquiescent, Ra, R2, beta=100):
+    # Balanced Complementary Class-A TCA
+    Vpeak = Vsignal * 1.4149
+    Ipeak = Vpeak * transconductance
+
+    Imid = (Ipeak - Iquiescent) / 2
+    Vin = Imid * Rset
+    Voffset = Vsupply - Rset * (Imid + Iquiescent)
+
+    Rb = Ra * (Vsupply / (Vsupply - Voffset))
+
+    gain = ((Vin + Voffset) * (Ra + Rb) - Vsupply * Rb) / (Ra * Vpeak)
+    R1 = R2 * (gain - 1)
+
+    return R1, Rb
+
+
+def TCA_2(Vsupply, Vin, Gain, Rset, Ioffset, Ra, R2, beta=100):
     # Balanced Complementary Class-A TCA
     Vpeak = Vin * 1.4149
     Iout_max = Vpeak * Gain  # A
@@ -61,16 +78,31 @@ def main():
 
     # Balanced Complementary Class-A TCA -------------------------------------------------------------------------------
     Vsupply = 10
-    Vin = 6
-    Gain = 0.517  # A/V
-    Rset = 0.04
-    Ioffset = 0.130  # A
+    Vsignal = 6
+    transconductance = 0.517  # A/V
+    Rset = 0.2
+    Iquiescent = 0.050  # A
     beta = 100
 
     R2 = 10000
     Ra = 1000
 
-    R1, Rb = TCA_1(Vsupply, Vin, Gain, Rset, Ioffset, Ra, R2, beta)
+    R1, Rb = TCA_1(Vsupply, Vsignal, transconductance, Rset, Iquiescent, Ra, R2, beta)
+    print('\nBalanced Complementary Class-A TCA')
+    print(f'R1: {round(R1, 2)}\tR2: {round(R2, 2)}\nRa: {round(Ra, 2)}\tRb: {round(Rb, 2)}')
+
+    # Balanced Complementary Class-A TCA -------------------------------------------------------------------------------
+    Vsupply = 10
+    Vin = 6
+    Gain = 0.517  # A/V
+    Rset = 0.2
+    Ioffset = 0.050  # A
+    beta = 100
+
+    R2 = 10000
+    Ra = 1000
+
+    R1, Rb = TCA_2(Vsupply, Vin, Gain, Rset, Ioffset, Ra, R2, beta)
     print('\nBalanced Complementary Class-A TCA')
     print(f'R1: {round(R1, 2)}\tR2: {round(R2, 2)}\nRa: {round(Ra, 2)}\tRb: {round(Rb, 2)}')
 
